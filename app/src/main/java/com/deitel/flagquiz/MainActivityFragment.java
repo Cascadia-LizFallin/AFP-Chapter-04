@@ -47,6 +47,8 @@ public class MainActivityFragment extends Fragment {
    private String correctAnswer; // correct country for the current flag
    private int totalGuesses; // number of guesses made
    private int correctAnswers; // number of correct guesses
+   private boolean isFirstGuess; // if the current guess is the first one in this round
+   private int correctFirstAnswers; // number of times the first guess was correct
    private int guessRows; // number of rows displaying guess Buttons
    private SecureRandom random; // used to randomize the quiz
    private Handler handler; // used to delay loading next flag
@@ -149,7 +151,9 @@ public class MainActivityFragment extends Fragment {
          Log.e(TAG, "Error loading image file names", exception);
       }
 
+      isFirstGuess = true;  // reset the flag indicating this is the first guess
       correctAnswers = 0; // reset the number of correct answers made
+      correctFirstAnswers = 0; // reset the number of correct first answers made
       totalGuesses = 0; // reset the total number of guesses the user made
       quizCountriesList.clear(); // clear prior list of quiz countries
 
@@ -293,6 +297,8 @@ public class MainActivityFragment extends Fragment {
 
          if (guess.equals(answer)) { // if the guess is correct
             ++correctAnswers; // increment the number of correct answers
+            if (isFirstGuess)
+               ++correctFirstAnswers; // increment First Guess counter if necessary
 
             // display correct answer in green text
             answerTextView.setText(answer + "!");
@@ -313,9 +319,10 @@ public class MainActivityFragment extends Fragment {
                         AlertDialog.Builder builder =
                            new AlertDialog.Builder(getActivity());
                         builder.setMessage(
-                           getString(R.string.results,
-                              totalGuesses,
-                              (1000 / (double) totalGuesses)));
+                                getString(R.string.results,
+                                        totalGuesses,
+                                        (1000 / (double) totalGuesses)) +
+                                        "\nTotal number of correct first guesses: " + correctFirstAnswers);
 
                         // "Reset Quiz" Button
                         builder.setPositiveButton(R.string.reset_quiz,
@@ -344,6 +351,8 @@ public class MainActivityFragment extends Fragment {
                         animate(true); // animate the flag off the screen
                      }
                   }, 2000); // 2000 milliseconds for 2-second delay
+
+               isFirstGuess = true; // Reset the Is First Guess counter
             }
          }
          else { // answer was incorrect
@@ -354,6 +363,8 @@ public class MainActivityFragment extends Fragment {
             answerTextView.setTextColor(getResources().getColor(
                R.color.incorrect_answer, getContext().getTheme()));
             guessButton.setEnabled(false); // disable incorrect answer
+
+            isFirstGuess = false; // Next guess will be number 2 or more
          }
       }
    };
